@@ -69,7 +69,7 @@ export function createBalloon(canvasWidth: number, difficulty: number, round: nu
     id: Math.random().toString(36).substr(2, 9),
     x: Math.random() * (canvasWidth - 100) + 50,
     y: window.innerHeight + 50,
-    speed: (0.3 + difficulty * 0.02 + Math.random() * 0.15) * roundSpeedMultiplier, // Increased from 0.08 base to 0.3
+    speed: (0.15 + difficulty * 0.015 + Math.random() * 0.08) * roundSpeedMultiplier, // Slower start: 0.15-0.23 base
     type,
     radius: 50,
   };
@@ -102,8 +102,8 @@ export function checkCollision(
   const distance = Math.sqrt(
     Math.pow(x - balloon.x, 2) + Math.pow(y - balloon.y, 2)
   );
-  // Make hit area 2x larger than visual radius for very easy clicking
-  return distance < balloon.radius * 2;
+  // Normal hit area - exact balloon size for mobile accuracy
+  return distance < balloon.radius;
 }
 
 export function getSpawnRate(difficulty: number): number {
