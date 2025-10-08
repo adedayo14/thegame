@@ -69,7 +69,7 @@ export function createBalloon(canvasWidth: number, difficulty: number, round: nu
     id: Math.random().toString(36).substr(2, 9),
     x: Math.random() * (canvasWidth - 100) + 50,
     y: window.innerHeight + 50,
-    speed: (0.15 + difficulty * 0.015 + Math.random() * 0.08) * roundSpeedMultiplier, // Slower start: 0.15-0.23 base
+    speed: (0.25 + difficulty * 0.02 + Math.random() * 0.12) * roundSpeedMultiplier, // Faster: 0.25-0.37 base (was 0.15-0.23)
     type,
     radius: 50,
   };
@@ -107,7 +107,7 @@ export function checkCollision(
 }
 
 export function getSpawnRate(difficulty: number): number {
-  return Math.max(800 - difficulty * 40, 400); // Spaced out spawning (increased from 600)
+  return Math.max(900 - difficulty * 40, 500); // Well-spaced for mobile: 900ms down to 500ms (was 800-400)
 }
 
 export function shouldUnlockSuperSkills(totalScore: number): boolean {
