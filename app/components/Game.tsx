@@ -93,7 +93,7 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
     }
   }, [gameState.totalScore, playerData, setPlayerData]);
 
-  const popBalloon = useCallback((balloon: Balloon) => {
+  const popBalloon = useCallback((balloon: Balloon, removeBalloon: boolean = true) => {
     const points = getBalloonPoints(balloon.type);
     
     // Show pop animation with points
@@ -107,49 +107,55 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
       // White balloon - lose a life and slow down
       setGameState(prev => {
         const newLives = prev.lives - 1;
+        const newBalloons = removeBalloon ? prev.balloons.filter(b => b.id !== balloon.id) : prev.balloons;
         if (newLives <= 0) {
-          return { ...prev, lives: 0, gameOver: true };
+          return { ...prev, balloons: newBalloons, lives: 0, gameOver: true };
         }
         return {
           ...prev,
+          balloons: newBalloons,
           lives: newLives,
           difficulty: Math.max(0, prev.difficulty - 1), // Slow down
         };
       });
     } else {
-      setGameState(prev => ({
-        ...prev,
-        score: prev.score + points,
-        totalScore: Math.max(0, prev.totalScore + points),
-      }));
+      // For non-white balloons, update score and handle super skills in ONE state update
+      setGameState(prev => {
+        let remainingBalloons = removeBalloon ? prev.balloons.filter(b => b.id !== balloon.id) : prev.balloons;
+        let bonusPoints = 0;
 
-      // Super skills: pop nearby balloons
-      if (playerData.privileges.superSkills && !isPracticeRound) {
-        const popRadius = 100;
-        setGameState(prev => {
-          const remainingBalloons: Balloon[] = [];
-          let bonusPoints = 0;
+        // Super skills: pop nearby balloons (only if removeBalloon is true)
+        if (playerData.privileges.superSkills && !isPracticeRound && removeBalloon) {
+          const popRadius = 100;
+          const finalBalloons: Balloon[] = [];
 
-          prev.balloons.forEach(b => {
-            if (b.id === balloon.id) return;
+          remainingBalloons.forEach(b => {
             const distance = Math.sqrt(
               Math.pow(b.x - balloon.x, 2) + Math.pow(b.y - balloon.y, 2)
             );
             if (distance < popRadius && b.type !== 'orange') {
               bonusPoints += getBalloonPoints(b.type);
+              // Show pop animation for bonus balloons
+              const bonusAnimId = Math.random().toString(36);
+              setPopAnimations(prev => [...prev, { id: bonusAnimId, x: b.x, y: b.y, points: getBalloonPoints(b.type) }]);
+              setTimeout(() => {
+                setPopAnimations(prev => prev.filter(anim => anim.id !== bonusAnimId));
+              }, 1000);
             } else {
-              remainingBalloons.push(b);
+              finalBalloons.push(b);
             }
           });
 
-          return {
-            ...prev,
-            balloons: remainingBalloons,
-            score: prev.score + bonusPoints,
-            totalScore: prev.totalScore + bonusPoints,
-          };
-        });
-      }
+          remainingBalloons = finalBalloons;
+        }
+
+        return {
+          ...prev,
+          balloons: remainingBalloons,
+          score: prev.score + points + bonusPoints,
+          totalScore: Math.max(0, prev.totalScore + points + bonusPoints),
+        };
+      });
     }
   }, [playerData.privileges.superSkills, isPracticeRound]);
 
@@ -177,11 +183,7 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
     for (let i = gameState.balloons.length - 1; i >= 0; i--) {
       const balloon = gameState.balloons[i];
       if (checkCollision(x, y, balloon)) {
-        popBalloon(balloon);
-        setGameState(prev => ({
-          ...prev,
-          balloons: prev.balloons.filter(b => b.id !== balloon.id),
-        }));
+        popBalloon(balloon, true); // Pass true to remove balloon
         return; // Exit immediately after popping one balloon
       }
     }
@@ -521,11 +523,7 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
           for (let i = gameState.balloons.length - 1; i >= 0; i--) {
             const balloon = gameState.balloons[i];
             if (checkCollision(x, y, balloon)) {
-              popBalloon(balloon);
-              setGameState(prev => ({
-                ...prev,
-                balloons: prev.balloons.filter(b => b.id !== balloon.id),
-              }));
+              popBalloon(balloon, true); // Pass true to remove balloon
               return;
             }
           }
