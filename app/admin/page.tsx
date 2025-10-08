@@ -110,13 +110,13 @@ export default function AdminPage() {
           <div className="flex gap-4">
             <button
               onClick={loadResults}
-              className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg transition-colors"
+              className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded transition-colors"
             >
               Refresh
             </button>
             <button
               onClick={clearResults}
-              className="bg-red-600 hover:bg-red-500 text-white px-6 py-2 rounded-lg transition-colors"
+              className="bg-red-600 hover:bg-red-500 text-white px-6 py-2 rounded transition-colors"
             >
               Clear All
             </button>

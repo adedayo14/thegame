@@ -1,6 +1,18 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 
+// Fallback in-memory storage if database is not configured
+let memoryStorage: Array<{
+  id: number;
+  username: string;
+  totalScore: number;
+  roundScores: number[];
+  networkPrivilege: boolean;
+  opportunityPrivilege: boolean;
+  videoGameFrequency: string;
+  timestamp: string;
+}> = [];
+
 // Initialize database table (runs automatically on first query)
 async function initDatabase() {
   try {
@@ -16,14 +28,21 @@ async function initDatabase() {
         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
+    return true;
   } catch (error) {
-    console.error('Database init error:', error);
+    console.error('Database init error - using memory storage:', error);
+    return false;
   }
 }
 
 export async function GET() {
   try {
-    await initDatabase();
+    const dbAvailable = await initDatabase();
+    if (!dbAvailable) {
+      // Return memory storage if DB not available
+      return NextResponse.json({ results: memoryStorage });
+    }
+    
     const { rows } = await sql`
       SELECT 
         id,
@@ -40,14 +59,25 @@ export async function GET() {
     return NextResponse.json({ results: rows });
   } catch (error) {
     console.error('GET error:', error);
-    return NextResponse.json({ error: 'Failed to fetch results' }, { status: 500 });
+    // Fallback to memory storage
+    return NextResponse.json({ results: memoryStorage });
   }
 }
 
 export async function POST(request: Request) {
   try {
-    await initDatabase();
     const data = await request.json();
+    const dbAvailable = await initDatabase();
+    
+    if (!dbAvailable) {
+      // Use memory storage if DB not available
+      memoryStorage.push({
+        id: memoryStorage.length + 1,
+        ...data,
+        timestamp: new Date().toISOString(),
+      });
+      return NextResponse.json({ success: true, storage: 'memory' });
+    }
     
     await sql`
       INSERT INTO game_results (
@@ -67,10 +97,21 @@ export async function POST(request: Request) {
       )
     `;
     
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, storage: 'database' });
   } catch (error) {
     console.error('POST error:', error);
-    return NextResponse.json({ error: 'Failed to save result' }, { status: 500 });
+    // Fallback to memory storage
+    try {
+      const data = await request.json();
+      memoryStorage.push({
+        id: memoryStorage.length + 1,
+        ...data,
+        timestamp: new Date().toISOString(),
+      });
+      return NextResponse.json({ success: true, storage: 'memory' });
+    } catch {
+      return NextResponse.json({ error: 'Failed to save result' }, { status: 500 });
+    }
   }
 }
 
@@ -78,6 +119,17 @@ export async function DELETE(request: Request) {
   try {
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
+    const dbAvailable = await initDatabase();
+    
+    if (!dbAvailable) {
+      // Use memory storage
+      if (id) {
+        memoryStorage = memoryStorage.filter(r => r.id !== parseInt(id));
+      } else {
+        memoryStorage = [];
+      }
+      return NextResponse.json({ success: true, storage: 'memory' });
+    }
     
     if (id) {
       // Delete specific entry by ID

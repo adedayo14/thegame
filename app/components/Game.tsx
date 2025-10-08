@@ -264,7 +264,10 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
           opportunityPrivilege: playerData.privileges.opportunityPrivilege,
           videoGameFrequency: playerData.videoGameFrequency,
         }),
-      }).catch(err => console.error('Failed to save result:', err));
+      })
+      .then(response => response.json())
+      .then(data => console.log('Result saved:', data))
+      .catch(err => console.error('Failed to save result:', err));
       
       setPlayerData({ ...playerData, scores: newScores });
       setShowFinalResults(true);
