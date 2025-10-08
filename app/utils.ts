@@ -102,8 +102,8 @@ export function checkCollision(
   const distance = Math.sqrt(
     Math.pow(x - balloon.x, 2) + Math.pow(y - balloon.y, 2)
   );
-  // Normal hit area - exact balloon size for mobile accuracy
-  return distance < balloon.radius;
+  // Slightly forgiving hit area - 1.3x balloon radius for easier clicking without double-popping
+  return distance < balloon.radius * 1.3;
 }
 
 export function getSpawnRate(difficulty: number): number {
