@@ -107,7 +107,7 @@ export function checkCollision(
 }
 
 export function getSpawnRate(difficulty: number): number {
-  return Math.max(600 - difficulty * 40, 300); // Increased spawn rate (was 1000-50, now 600-40)
+  return Math.max(800 - difficulty * 40, 400); // Spaced out spawning (increased from 600)
 }
 
 export function shouldUnlockSuperSkills(totalScore: number): boolean {

@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { PlayerData, Balloon, GameState } from '../types';
 import {
   createBalloon,
-  createTrapBalloon,
   checkCollision,
   getBalloonColor,
   getBalloonPoints,
@@ -263,21 +262,15 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
         ctx.fill();
       });
 
-      // Spawn new balloons (multiple at once for clustering)
+      // Spawn new balloons - spaced out for fair gameplay
       const now = Date.now();
       const spawnRate = getSpawnRate(gameState.difficulty);
       if (now - lastSpawnRef.current > spawnRate) {
-        // Spawn 3-4 balloons at once for more action (increased from 2-3)
-        const balloonsToSpawn = Math.random() < 0.5 ? 3 : 4;
+        // Spawn 1-2 balloons at once, spaced out
+        const balloonsToSpawn = Math.random() < 0.7 ? 1 : 2;
         const newBalloons: Balloon[] = [];
         for (let i = 0; i < balloonsToSpawn; i++) {
-          const balloon = createBalloon(canvas.width, gameState.difficulty, gameState.round);
-          newBalloons.push(balloon);
-          
-          // 30% chance to spawn a white trap balloon near yellow balloons (increases with rounds)
-          if (balloon.type === 'yellow' && Math.random() < 0.2 + (gameState.round * 0.1)) {
-            newBalloons.push(createTrapBalloon(balloon, canvas.width, gameState.round));
-          }
+          newBalloons.push(createBalloon(canvas.width, gameState.difficulty, gameState.round));
         }
         setGameState(prev => ({
           ...prev,
