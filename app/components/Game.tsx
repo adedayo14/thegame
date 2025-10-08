@@ -267,8 +267,8 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
       const now = Date.now();
       const spawnRate = getSpawnRate(gameState.difficulty);
       if (now - lastSpawnRef.current > spawnRate) {
-        // Spawn 2-3 balloons at once for clustering and overlapping
-        const balloonsToSpawn = Math.random() < 0.5 ? 2 : 3;
+        // Spawn 3-4 balloons at once for more action (increased from 2-3)
+        const balloonsToSpawn = Math.random() < 0.5 ? 3 : 4;
         const newBalloons: Balloon[] = [];
         for (let i = 0; i < balloonsToSpawn; i++) {
           const balloon = createBalloon(canvas.width, gameState.difficulty, gameState.round);
