@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface GameResult {
+  id: number;
   username: string;
   totalScore: number;
   roundScores: number[];
@@ -43,9 +44,20 @@ export default function AdminPage() {
     if (confirm('Are you sure you want to clear all results?')) {
       try {
         await fetch('/api/results', { method: 'DELETE' });
-        setResults([]);
+        loadResults();
       } catch (error) {
         console.error('Error clearing results:', error);
+      }
+    }
+  };
+
+  const deleteEntry = async (id: number) => {
+    if (confirm('Delete this entry?')) {
+      try {
+        await fetch(`/api/results?id=${id}`, { method: 'DELETE' });
+        loadResults();
+      } catch (error) {
+        console.error('Error deleting entry:', error);
       }
     }
   };
@@ -123,7 +135,7 @@ export default function AdminPage() {
               </div>
               
               <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-6">
-                <h3 className="text-blue-300 text-sm mb-2">Network Privilege ('a')</h3>
+                <h3 className="text-blue-300 text-sm mb-2">Network Privilege (&apos;a&apos;)</h3>
                 <p className="text-3xl font-bold text-white">{stats.withNetwork}</p>
                 <p className="text-sm text-zinc-400 mt-2">Avg: {Math.round(avgScores.withNetwork)}</p>
               </div>
@@ -156,15 +168,16 @@ export default function AdminPage() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">Username</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">Total Score</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">Round Scores</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">Network ('a')</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">Network (&apos;a&apos;)</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">Opportunity (number)</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">Frequency</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">Timestamp</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-800">
-                    {results.map((result, index) => (
-                      <tr key={index} className="hover:bg-zinc-800/50">
+                    {results.map((result) => (
+                      <tr key={result.id} className="hover:bg-zinc-800/50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-white">{result.username}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-white">{result.totalScore}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-300">{result.roundScores.join(', ')}</td>
@@ -184,6 +197,14 @@ export default function AdminPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-300">{result.videoGameFrequency}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-400">{new Date(result.timestamp).toLocaleString()}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <button
+                            onClick={() => deleteEntry(result.id)}
+                            className="text-red-400 hover:text-red-300 font-medium"
+                          >
+                            Delete
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
