@@ -62,6 +62,41 @@ export default function AdminPage() {
     }
   };
 
+  const downloadCSV = () => {
+    // Create CSV header
+    const headers = ['Username', 'Total Score', 'Round 1', 'Round 2', 'Round 3', 'Network Privilege', 'Opportunity Privilege', 'Video Game Frequency', 'Timestamp'];
+    
+    // Create CSV rows
+    const rows = results.map(result => [
+      result.username,
+      result.totalScore,
+      result.roundScores[0] || 0,
+      result.roundScores[1] || 0,
+      result.roundScores[2] || 0,
+      result.networkPrivilege ? 'Yes' : 'No',
+      result.opportunityPrivilege ? 'Yes' : 'No',
+      result.videoGameFrequency,
+      new Date(result.timestamp).toLocaleString()
+    ]);
+    
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+    
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `balloon-game-results-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Calculate statistics
   const stats = {
     total: results.length,
@@ -108,6 +143,15 @@ export default function AdminPage() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-white">Admin Dashboard</h1>
           <div className="flex gap-4">
+            <button
+              onClick={downloadCSV}
+              className="bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded transition-colors flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+              Download CSV
+            </button>
             <button
               onClick={loadResults}
               className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded transition-colors"
