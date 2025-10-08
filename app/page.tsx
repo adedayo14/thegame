@@ -1,103 +1,114 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import { PlayerData } from './types';
+import { detectPrivileges } from './utils';
+import Instructions from './components/Instructions';
+import Game from './components/Game';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [playerData, setPlayerData] = useState<PlayerData | null>(null);
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [username, setUsername] = useState('');
+  const [frequency, setFrequency] = useState<'often' | 'sometimes' | 'rarely'>('sometimes');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleStart = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!username.trim()) return;
+
+    const privileges = detectPrivileges(username);
+    const newPlayerData: PlayerData = {
+      username,
+      videoGameFrequency: frequency,
+      privileges: {
+        ...privileges,
+        hasPracticed: false,
+        superSkills: false,
+        hasSlowButton: false,
+        slowButtonUsed: false,
+      },
+      scores: [],
+    };
+
+    setPlayerData(newPlayerData);
+    setShowInstructions(true);
+  };
+
+  const handleInstructionsComplete = () => {
+    setShowInstructions(false);
+  };
+
+  if (!playerData) {
+    return (
+      <main className="min-h-screen bg-black flex items-center justify-center p-6">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black"></div>
+        <div className="relative max-w-md w-full">
+          <div className="backdrop-blur-xl bg-zinc-900/80 rounded-2xl border border-zinc-800 shadow-2xl p-8">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h1 className="text-4xl font-bold tracking-tight text-white">
+                  Balloon Pop
+                </h1>
+                <p className="text-zinc-400 text-base">
+                  Test your reflexes in this fast-paced game
+                </p>
+              </div>
+
+              <form onSubmit={handleStart} className="space-y-6">
+                <div className="space-y-2">
+                  <label htmlFor="username" className="block text-sm font-medium text-zinc-200">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    id="username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-zinc-500 transition-all"
+                    placeholder="Enter your username"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-zinc-200">
+                    How often do you play video games?
+                  </label>
+                  <div className="space-y-2">
+                    {(['often', 'sometimes', 'rarely'] as const).map((option) => (
+                      <label key={option} className="flex items-center space-x-3 cursor-pointer group p-3 rounded-lg hover:bg-zinc-800/50 transition-colors">
+                        <input
+                          type="radio"
+                          name="frequency"
+                          value={option}
+                          checked={frequency === option}
+                          onChange={(e) => setFrequency(e.target.value as typeof option)}
+                          className="w-4 h-4 text-blue-500 bg-zinc-700 border-zinc-600 focus:ring-blue-500 focus:ring-offset-zinc-900"
+                        />
+                        <span className="text-zinc-300 capitalize group-hover:text-white transition-colors">{option}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-zinc-900"
+                >
+                  Start Game
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    );
+  }
+
+  if (showInstructions) {
+    return <Instructions playerData={playerData} onComplete={handleInstructionsComplete} />;
+  }
+
+  return <Game playerData={playerData} setPlayerData={setPlayerData} />;
 }
+
