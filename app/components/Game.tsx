@@ -32,27 +32,31 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
   const [showGameOver, setShowGameOver] = useState(false);
   const [isSlowMo, setIsSlowMo] = useState(false);
   const [showFinalResults, setShowFinalResults] = useState(false);
-  const [practiceTimeRemaining, setPracticeTimeRemaining] = useState(60); // 1 minute for practice
+  const [roundTimeRemaining, setRoundTimeRemaining] = useState(90); // 90 seconds per round
   const [popAnimations, setPopAnimations] = useState<Array<{id: string, x: number, y: number, points: number}>>([]);
   const animationFrameRef = useRef<number | undefined>(undefined);
   const lastSpawnRef = useRef<number>(Date.now());
-  const practiceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const roundTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastClickTimeRef = useRef<number>(0); // Prevent double-click
 
   const isPracticeRound = gameState.round === 0;
+  const roundTimeLimit = isPracticeRound ? 60 : 90; // 60s for practice, 90s for real rounds
 
-  // Practice round timer (1 minute max)
+  // Round timer (works for both practice and real rounds)
   useEffect(() => {
-    if (!isPracticeRound || gameState.gameOver) {
-      if (practiceTimerRef.current) {
-        clearInterval(practiceTimerRef.current);
-        practiceTimerRef.current = null;
+    if (gameState.gameOver) {
+      if (roundTimerRef.current) {
+        clearInterval(roundTimerRef.current);
+        roundTimerRef.current = null;
       }
       return;
     }
 
-    practiceTimerRef.current = setInterval(() => {
-      setPracticeTimeRemaining(prev => {
+    // Reset timer when round changes
+    setRoundTimeRemaining(roundTimeLimit);
+
+    roundTimerRef.current = setInterval(() => {
+      setRoundTimeRemaining(prev => {
         if (prev <= 1) {
           setGameState(prevState => ({ ...prevState, gameOver: true }));
           return 0;
@@ -62,12 +66,12 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
     }, 1000);
 
     return () => {
-      if (practiceTimerRef.current) {
-        clearInterval(practiceTimerRef.current);
-        practiceTimerRef.current = null;
+      if (roundTimerRef.current) {
+        clearInterval(roundTimerRef.current);
+        roundTimerRef.current = null;
       }
     };
-  }, [isPracticeRound, gameState.gameOver]);
+  }, [gameState.round, gameState.gameOver, roundTimeLimit]);
 
   // Update privileges based on score
   useEffect(() => {
@@ -539,12 +543,12 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
                 <span className="text-xs text-white/60 uppercase tracking-wide">Score:</span>
                 <span className="text-lg font-semibold text-white">{isPracticeRound ? gameState.score : gameState.totalScore}</span>
               </div>
-              {isPracticeRound && (
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-xs text-white/60 uppercase tracking-wide">Time:</span>
-                  <span className="text-lg font-semibold text-yellow-300">{practiceTimeRemaining}s</span>
-                </div>
-              )}
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xs text-white/60 uppercase tracking-wide">Time:</span>
+                <span className={`text-lg font-semibold ${roundTimeRemaining <= 10 ? 'text-red-400' : isPracticeRound ? 'text-yellow-300' : 'text-blue-300'}`}>
+                  {roundTimeRemaining}s
+                </span>
+              </div>
             </div>
             
             <div className="flex items-center gap-3">
