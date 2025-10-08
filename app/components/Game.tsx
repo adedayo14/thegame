@@ -123,6 +123,7 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
       setGameState(prev => {
         let remainingBalloons = removeBalloon ? prev.balloons.filter(b => b.id !== balloon.id) : prev.balloons;
         let bonusPoints = 0;
+        let livesLost = 0;
 
         // Super skills: pop nearby balloons (only if removeBalloon is true)
         if (playerData.privileges.superSkills && !isPracticeRound && removeBalloon) {
@@ -134,10 +135,17 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
               Math.pow(b.x - balloon.x, 2) + Math.pow(b.y - balloon.y, 2)
             );
             if (distance < popRadius && b.type !== 'orange') {
-              bonusPoints += getBalloonPoints(b.type);
+              const balloonPoints = getBalloonPoints(b.type);
+              bonusPoints += balloonPoints;
+              
+              // If nearby balloon is white, lose a life!
+              if (b.type === 'white') {
+                livesLost++;
+              }
+              
               // Show pop animation for bonus balloons
               const bonusAnimId = Math.random().toString(36);
-              setPopAnimations(prev => [...prev, { id: bonusAnimId, x: b.x, y: b.y, points: getBalloonPoints(b.type) }]);
+              setPopAnimations(prev => [...prev, { id: bonusAnimId, x: b.x, y: b.y, points: balloonPoints }]);
               setTimeout(() => {
                 setPopAnimations(prev => prev.filter(anim => anim.id !== bonusAnimId));
               }, 1000);
@@ -149,11 +157,16 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
           remainingBalloons = finalBalloons;
         }
 
+        const newLives = prev.lives - livesLost;
+        const isGameOver = newLives <= 0;
+
         return {
           ...prev,
           balloons: remainingBalloons,
           score: prev.score + points + bonusPoints,
           totalScore: Math.max(0, prev.totalScore + points + bonusPoints),
+          lives: Math.max(0, newLives),
+          gameOver: prev.gameOver || isGameOver,
         };
       });
     }
@@ -235,8 +248,24 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
       }));
       setShowGameOver(false);
     } else {
-      // After round 3, show final results
+      // After round 3, show final results and save to database
       const newScores = [...playerData.scores, gameState.score];
+      const totalScore = newScores.reduce((a, b) => a + b, 0);
+      
+      // Save results to admin dashboard
+      fetch('/api/results', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: playerData.username,
+          totalScore,
+          roundScores: newScores,
+          networkPrivilege: playerData.privileges.networkPrivilege,
+          opportunityPrivilege: playerData.privileges.opportunityPrivilege,
+          videoGameFrequency: playerData.videoGameFrequency,
+        }),
+      }).catch(err => console.error('Failed to save result:', err));
+      
       setPlayerData({ ...playerData, scores: newScores });
       setShowFinalResults(true);
     }
