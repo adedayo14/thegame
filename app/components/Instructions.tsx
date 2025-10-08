@@ -32,12 +32,6 @@ export default function Instructions({ playerData, onComplete }: InstructionsPro
                     <span className="text-blue-400 mt-1">•</span>
                     <span>Balloons rise from the bottom - click or tap to pop them</span>
                   </li>
-                  {!privileges.networkPrivilege && (
-                    <li className="flex items-start gap-3">
-                      <span className="text-white mt-1">•</span>
-                      <span><span className="text-white font-medium">White balloons</span> - lose a life!</span>
-                    </li>
-                  )}
                   <li className="flex items-start gap-3">
                     <span className="text-green-400 mt-1">•</span>
                     <span>You have <span className="text-white font-medium">5 lives and 3 rounds</span> to play</span>
