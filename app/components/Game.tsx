@@ -32,10 +32,41 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
   const [showGameOver, setShowGameOver] = useState(false);
   const [isSlowMo, setIsSlowMo] = useState(false);
   const [showFinalResults, setShowFinalResults] = useState(false);
+  const [practiceTimeRemaining, setPracticeTimeRemaining] = useState(60); // 1 minute for practice
+  const [popAnimations, setPopAnimations] = useState<Array<{id: string, x: number, y: number, points: number}>>([]);
   const animationFrameRef = useRef<number | undefined>(undefined);
   const lastSpawnRef = useRef<number>(Date.now());
+  const practiceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const isPracticeRound = gameState.round === 0;
+
+  // Practice round timer (1 minute max)
+  useEffect(() => {
+    if (!isPracticeRound || gameState.gameOver) {
+      if (practiceTimerRef.current) {
+        clearInterval(practiceTimerRef.current);
+        practiceTimerRef.current = null;
+      }
+      return;
+    }
+
+    practiceTimerRef.current = setInterval(() => {
+      setPracticeTimeRemaining(prev => {
+        if (prev <= 1) {
+          setGameState(prevState => ({ ...prevState, gameOver: true }));
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (practiceTimerRef.current) {
+        clearInterval(practiceTimerRef.current);
+        practiceTimerRef.current = null;
+      }
+    };
+  }, [isPracticeRound, gameState.gameOver]);
 
   // Update privileges based on score
   useEffect(() => {
@@ -59,6 +90,13 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
 
   const popBalloon = useCallback((balloon: Balloon) => {
     const points = getBalloonPoints(balloon.type);
+    
+    // Show pop animation with points
+    const animationId = Math.random().toString(36);
+    setPopAnimations(prev => [...prev, { id: animationId, x: balloon.x, y: balloon.y, points }]);
+    setTimeout(() => {
+      setPopAnimations(prev => prev.filter(anim => anim.id !== animationId));
+    }, 1000); // Remove after 1 second
     
     if (balloon.type === 'white') {
       // White balloon - lose a life and slow down
@@ -486,6 +524,12 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
                 <span className="text-xs text-white/60 uppercase tracking-wide">Score:</span>
                 <span className="text-lg font-semibold text-white">{isPracticeRound ? gameState.score : gameState.totalScore}</span>
               </div>
+              {isPracticeRound && (
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-xs text-white/60 uppercase tracking-wide">Time:</span>
+                  <span className="text-lg font-semibold text-yellow-300">{practiceTimeRemaining}s</span>
+                </div>
+              )}
             </div>
             
             <div className="flex items-center gap-3">
@@ -503,6 +547,26 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
           </div>
         </div>
       </div>
+
+      {/* Pop Animations */}
+      {popAnimations.map(anim => (
+        <div
+          key={anim.id}
+          className="absolute pointer-events-none z-20 animate-bounce"
+          style={{
+            left: `${anim.x}px`,
+            top: `${anim.y}px`,
+            transform: 'translate(-50%, -50%)',
+            animation: 'fadeOutUp 1s ease-out forwards',
+          }}
+        >
+          <span className={`text-3xl font-bold ${
+            anim.points > 0 ? 'text-green-400' : anim.points < 0 ? 'text-red-400' : 'text-white'
+          }`}>
+            {anim.points > 0 ? '+' : ''}{anim.points}
+          </span>
+        </div>
+      ))}
 
       {/* Slow Mo Button */}
       {playerData.privileges.hasSlowButton && !playerData.privileges.slowButtonUsed && !isPracticeRound && (
