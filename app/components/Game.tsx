@@ -37,6 +37,7 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
   const animationFrameRef = useRef<number | undefined>(undefined);
   const lastSpawnRef = useRef<number>(Date.now());
   const practiceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastClickTimeRef = useRef<number>(0); // Prevent double-click
 
   const isPracticeRound = gameState.round === 0;
 
@@ -151,6 +152,11 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
   const handleCanvasClick = useCallback((event: React.MouseEvent<HTMLCanvasElement>) => {
     event.preventDefault();
     event.stopPropagation();
+    
+    // Prevent double-firing (touch + click on mobile)
+    const now = Date.now();
+    if (now - lastClickTimeRef.current < 100) return;
+    lastClickTimeRef.current = now;
     
     if (gameState.gameOver || gameState.isPaused) return;
 
@@ -490,6 +496,15 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
         onClick={handleCanvasClick}
         onTouchStart={(e) => {
           e.preventDefault();
+          e.stopPropagation();
+          
+          // Prevent double-firing (touch + click on mobile)
+          const now = Date.now();
+          if (now - lastClickTimeRef.current < 100) return;
+          lastClickTimeRef.current = now;
+          
+          if (gameState.gameOver || gameState.isPaused) return;
+          
           const touch = e.touches[0];
           const canvas = canvasRef.current;
           if (!canvas) return;
