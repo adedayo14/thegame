@@ -34,6 +34,7 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
   const [showFinalResults, setShowFinalResults] = useState(false);
   const [roundTimeRemaining, setRoundTimeRemaining] = useState(90); // 90 seconds per round
   const [popAnimations, setPopAnimations] = useState<Array<{id: string, x: number, y: number, points: number}>>([]);
+  const [showLifeLostMessage, setShowLifeLostMessage] = useState(false);
   const animationFrameRef = useRef<number | undefined>(undefined);
   const lastSpawnRef = useRef<number>(Date.now());
   const roundTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -105,6 +106,10 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
     
     if (balloon.type === 'white') {
       // White balloon - lose a life and slow down
+      // Show "You've lost a life!" message
+      setShowLifeLostMessage(true);
+      setTimeout(() => setShowLifeLostMessage(false), 2000); // Hide after 2 seconds
+
       setGameState(prev => {
         const newLives = prev.lives - 1;
         const newBalloons = removeBalloon ? prev.balloons.filter(b => b.id !== balloon.id) : prev.balloons;
@@ -141,6 +146,9 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
               // If nearby balloon is white, lose a life!
               if (b.type === 'white') {
                 livesLost++;
+                // Show "You've lost a life!" message for super skills white balloon
+                setShowLifeLostMessage(true);
+                setTimeout(() => setShowLifeLostMessage(false), 2000);
               }
               
               // Show pop animation for bonus balloons
@@ -638,6 +646,14 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
         <div className="absolute top-24 left-0 right-0 flex justify-center pointer-events-none z-10">
           <div className="backdrop-blur-xl bg-indigo-600 border-2 border-indigo-400 text-white px-6 py-2 rounded-lg font-medium shadow-2xl">
             ⏰ SLOW MOTION ACTIVE
+          </div>
+        </div>
+      )}
+
+      {showLifeLostMessage && (
+        <div className="absolute top-24 left-0 right-0 flex justify-center pointer-events-none z-10">
+          <div className="backdrop-blur-xl bg-red-600 border-2 border-red-400 text-white px-6 py-3 rounded-lg font-bold shadow-2xl animate-pulse">
+            💀 YOU&apos;VE LOST A LIFE!
           </div>
         </div>
       )}
