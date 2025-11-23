@@ -19,7 +19,7 @@ export function getBalloonColor(type: BalloonType): string {
   const colors = {
     white: '#FFFFFF',      // Killer balloon - lose a life
     yellow: '#FFD700',     // 100 points
-    blue: '#4169E1',       // Lose 50 points
+    blue: '#4169E1',       // Lose 100 points
     pink: '#FF69B4',       // 10 points
     green: '#32CD32',      // 10 points
     purple: '#9370DB',     // 10 points
@@ -33,7 +33,7 @@ export function getBalloonPoints(type: BalloonType): number {
   const points = {
     white: 0,        // Killer balloon - lose a life
     yellow: 100,     // 100 points
-    blue: -50,       // Lose 50 points
+    blue: -100,      // Lose 100 points
     pink: 10,        // 10 points
     green: 10,       // 10 points
     purple: 10,      // 10 points
