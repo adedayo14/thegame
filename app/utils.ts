@@ -107,7 +107,7 @@ export function checkCollision(
 }
 
 export function getSpawnRate(difficulty: number): number {
-  return Math.max(900 - difficulty * 40, 500); // Well-spaced for mobile: 900ms down to 500ms (was 800-400)
+  return Math.max(700 - difficulty * 30, 400); // Faster spawning for higher density: 700ms down to 400ms
 }
 
 export function shouldUnlockSuperSkills(totalScore: number): boolean {

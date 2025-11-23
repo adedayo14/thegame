@@ -352,12 +352,13 @@ export default function Game({ playerData, setPlayerData }: GameProps) {
         ctx.fill();
       });
 
-      // Spawn new balloons - spaced out for fair gameplay
+      // Spawn new balloons - higher density for more challenge
       const now = Date.now();
       const spawnRate = getSpawnRate(gameState.difficulty);
       if (now - lastSpawnRef.current > spawnRate) {
-        // Spawn 1-2 balloons at once, spaced out
-        const balloonsToSpawn = Math.random() < 0.7 ? 1 : 2;
+        // Spawn 2-4 balloons at once for better density
+        const rand = Math.random();
+        const balloonsToSpawn = rand < 0.3 ? 2 : rand < 0.7 ? 3 : 4;
         const newBalloons: Balloon[] = [];
         for (let i = 0; i < balloonsToSpawn; i++) {
           newBalloons.push(createBalloon(canvas.width, gameState.difficulty, gameState.round));
