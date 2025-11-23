@@ -64,20 +64,28 @@ export default function AdminPage() {
 
   const downloadCSV = () => {
     // Create CSV header
-    const headers = ['Username', 'Total Score', 'Round 1', 'Round 2', 'Round 3', 'Network Privilege', 'Opportunity Privilege', 'Video Game Frequency', 'Timestamp'];
-    
+    const headers = ['Username', 'Total Score', 'Round 1', 'Round 2', 'Round 3', 'Privileges', 'Network Privilege (m)', 'Opportunity Privilege (h)', 'Video Game Frequency', 'Timestamp'];
+
     // Create CSV rows
-    const rows = results.map(result => [
-      result.username,
-      result.totalScore,
-      result.roundScores[0] || 0,
-      result.roundScores[1] || 0,
-      result.roundScores[2] || 0,
-      result.networkPrivilege ? 'Yes' : 'No',
-      result.opportunityPrivilege ? 'Yes' : 'No',
-      result.videoGameFrequency,
-      new Date(result.timestamp).toLocaleString()
-    ]);
+    const rows = results.map(result => {
+      const privilegeType = result.networkPrivilege && result.opportunityPrivilege ? 'Both'
+        : result.networkPrivilege ? 'Network (m)'
+        : result.opportunityPrivilege ? 'Opportunity (h)'
+        : 'None';
+
+      return [
+        result.username,
+        result.totalScore,
+        result.roundScores[0] || 0,
+        result.roundScores[1] || 0,
+        result.roundScores[2] || 0,
+        privilegeType,
+        result.networkPrivilege ? 'Yes' : 'No',
+        result.opportunityPrivilege ? 'Yes' : 'No',
+        result.videoGameFrequency,
+        new Date(result.timestamp).toLocaleString()
+      ];
+    });
     
     // Combine headers and rows
     const csvContent = [
@@ -179,13 +187,13 @@ export default function AdminPage() {
               </div>
               
               <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-6">
-                <h3 className="text-blue-300 text-sm mb-2">Network Privilege (&apos;a&apos;)</h3>
+                <h3 className="text-blue-300 text-sm mb-2">Network Privilege (&apos;m&apos;)</h3>
                 <p className="text-3xl font-bold text-white">{stats.withNetwork}</p>
                 <p className="text-sm text-zinc-400 mt-2">Avg: {Math.round(avgScores.withNetwork)}</p>
               </div>
 
               <div className="bg-green-900/20 border border-green-700 rounded-lg p-6">
-                <h3 className="text-green-300 text-sm mb-2">Opportunity Privilege (number)</h3>
+                <h3 className="text-green-300 text-sm mb-2">Opportunity Privilege (&apos;h&apos;)</h3>
                 <p className="text-3xl font-bold text-white">{stats.withOpportunity}</p>
                 <p className="text-sm text-zinc-400 mt-2">Avg: {Math.round(avgScores.withOpportunity)}</p>
               </div>
@@ -212,8 +220,7 @@ export default function AdminPage() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">Username</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">Total Score</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">Round Scores</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">Network (&apos;a&apos;)</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">Opportunity (number)</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">Privileges</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">Frequency</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">Timestamp</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">Action</th>
@@ -226,17 +233,14 @@ export default function AdminPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-white">{result.totalScore}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-300">{result.roundScores.join(', ')}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {result.networkPrivilege ? (
-                            <span className="text-green-400">✓ Yes</span>
+                          {result.networkPrivilege && result.opportunityPrivilege ? (
+                            <span className="text-purple-400 font-medium">Both (m+h)</span>
+                          ) : result.networkPrivilege ? (
+                            <span className="text-blue-400">Network (m)</span>
+                          ) : result.opportunityPrivilege ? (
+                            <span className="text-green-400">Opportunity (h)</span>
                           ) : (
-                            <span className="text-red-400">✗ No</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {result.opportunityPrivilege ? (
-                            <span className="text-green-400">✓ Yes</span>
-                          ) : (
-                            <span className="text-red-400">✗ No</span>
+                            <span className="text-red-400">None</span>
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-300">{result.videoGameFrequency}</td>
