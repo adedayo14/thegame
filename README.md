@@ -8,21 +8,23 @@ Students play a seemingly simple hand-eye-coordination game where they pop ballo
 
 ### Game Mechanics
 
-- **Red, Blue, Green Balloons**: 10 points each
-- **Purple Balloons**: 100 points each (valuable!)
-- **Black Balloons**: Lose a life and restart the round
+- **Pink, Green, Purple, Orange, Teal Balloons**: 10 points each
+- **Yellow Balloons**: 100 points each (valuable!)
+- **Blue Balloons**: -50 points (penalty!)
+- **White Balloons**: Lose a life and restart the round (killer balloon)
 - **5 Lives Total**: Points are banked after each round
 - **Progressive Difficulty**: Speed and balloon spawn rate increase over time
+- **Round Timer**: 90 seconds per round (60 seconds for practice round)
 
 ### Privilege System
 
-The game assigns privileges based on email addresses to demonstrate how advantages compound:
+The game assigns privileges based on usernames to demonstrate how advantages compound:
 
-1. **Network Privilege** (email contains 'M' or 'm'):
-   - Player is told that purple balloons = 100 points
+1. **Network Privilege** (username contains letter 'a' or 'A'):
+   - Player is told that yellow balloons = 100 points
    - Can focus strategy on high-value targets
 
-2. **Opportunity Privilege** (email contains 'H' or 'h'):
+2. **Opportunity Privilege** (username contains any number 0-9):
    - Receives a FREE practice round before the real game
    - Can learn mechanics without consequences
 
@@ -37,9 +39,10 @@ The game assigns privileges based on email addresses to demonstrate how advantag
 ### Educational Purpose
 
 The game demonstrates how:
-- Small initial advantages (knowing purple = 100pts, or getting practice) compound over time
+- Small initial advantages (knowing yellow = 100pts, or getting practice) compound over time
 - Those with privileges can unlock additional advantages more easily
 - The end result shows significant score differences despite "equal rules"
+- Hidden information creates invisible barriers for those without network privilege
 
 ## 🚀 Getting Started
 
@@ -84,10 +87,18 @@ This app is optimized for:
 
 To test different privilege levels:
 
-1. **Network + Opportunity**: Use email like `hannah@mail.com` (has both H and M)
-2. **Network Only**: Use email like `mark@test.com` (has M)
-3. **Opportunity Only**: Use email like `hannah@test.org` (has H, but no M in domain)
-4. **No Privilege**: Use email like `jane@test.com` (no H or M)
+1. **Network + Opportunity**: Use username like `sarah2` (has both 'a' and a number)
+2. **Network Only**: Use username like `mark` (has 'a')
+3. **Opportunity Only**: Use username like `joe1` (has a number, no 'a')
+4. **No Privilege**: Use username like `joe` (no 'a' or numbers)
+
+## 🔐 Admin Dashboard
+
+Access `/admin` with password `Eniola` to:
+- View all player results
+- See statistics by privilege group
+- Download data as CSV
+- Visualize the impact of privilege on scores
 
 ## 🛠️ Technology Stack
 

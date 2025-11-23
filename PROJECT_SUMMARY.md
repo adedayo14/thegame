@@ -12,28 +12,33 @@ The Balloon Privilege Game has been successfully built and is ready to deploy to
 ## 📋 What Was Built
 
 ### Core Game Features ✓
-- ✅ Email capture with decoy question
+- ✅ Username capture with video game frequency question
 - ✅ Mobile-first responsive design
 - ✅ Canvas-based balloon popping game
 - ✅ 5 lives system with score banking
 - ✅ Progressive difficulty (speed & spawn rate increase)
-- ✅ Multiple balloon types (red, blue, green, purple, black)
-- ✅ Black balloon = lose a life
-- ✅ One-time instruction screen
+- ✅ Multiple balloon types:
+  - **White balloon** = killer (lose a life)
+  - **Yellow balloon** = 100 points
+  - **Blue balloon** = -50 points
+  - **Pink/Green/Purple/Orange/Teal balloons** = 10 points each
+- ✅ One-time instruction screen (content varies by privilege)
 
 ### Privilege System ✓
-- ✅ **Network Privilege** (email contains 'M'): Player learns purple = 100pts
-- ✅ **Opportunity Privilege** (email contains 'H'): Gets free practice round
+- ✅ **Network Privilege** (username contains letter 'a' or 'A'): Player learns yellow = 100pts
+- ✅ **Opportunity Privilege** (username contains any number 0-9): Gets free practice round
 - ✅ **Super Skills** (Round 2+, score > 500): Popping pops nearby balloons
 - ✅ **Slow Motion** (Round 3+, score > 1500): 10-second slow-mo button
 - ✅ Privileges compound - early advantages unlock more power-ups
 
 ### Technical Implementation ✓
-- ✅ Next.js 15 with App Router
+- ✅ Next.js 14 with App Router
 - ✅ TypeScript for type safety
-- ✅ Tailwind CSS for styling
-- ✅ Client-side game logic
-- ✅ No database needed - all in-browser
+- ✅ Tailwind CSS v4 for styling
+- ✅ Client-side game logic (HTML Canvas)
+- ✅ Vercel Postgres database for result storage (with memory fallback)
+- ✅ Admin dashboard at /admin (password: Eniola)
+- ✅ CSV export functionality
 - ✅ Touch and mouse support
 - ✅ Responsive UI
 
@@ -66,23 +71,23 @@ balloon-privilege-game/
 ## 🎮 How the Game Works
 
 ### Round Flow:
-1. **Email Entry** → Player enters email + video game frequency
+1. **Username Entry** → Player enters username + video game frequency
 2. **Instructions** → One-time-only instructions (privilege-dependent)
 3. **Game Start** → Balloons rise, player clicks/taps to pop
-4. **Lives System** → Black balloon = lose 1 life, restart round
-5. **Score Banking** → Points saved after each life
+4. **Lives System** → White balloon = lose 1 life, restart round
+5. **Score Banking** → Points saved after each round (90 seconds per round)
 6. **Privilege Unlocks** → Based on total score, new powers activate
 
 ### Privilege Examples:
 
-| Email            | Network (M) | Opportunity (H) | Result                                      |
-|------------------|-------------|-----------------|---------------------------------------------|
-| jane@test.com    | ❌          | ❌              | Standard game only                          |
-| mark@test.com    | ✅          | ❌              | Knows purple = 100pts                       |
-| hannah@test.org  | ❌          | ✅              | Gets practice round                         |
-| hannah@mail.com  | ✅          | ✅              | Practice + purple knowledge                 |
-| + score > 500    | -           | -               | + Super Skills (pop radius)                 |
-| + score > 1500   | -           | -               | + Slow Motion button                        |
+| Username         | Network (a) | Opportunity (number) | Result                                      |
+|------------------|-------------|----------------------|---------------------------------------------|
+| joe              | ❌          | ❌                   | Standard game only                          |
+| mark             | ✅          | ❌                   | Knows yellow = 100pts                       |
+| joe1             | ❌          | ✅                   | Gets practice round                         |
+| sarah2           | ✅          | ✅                   | Practice + yellow knowledge                 |
+| + score > 500    | -           | -                    | + Super Skills (pop radius)                 |
+| + score > 1500   | -           | -                    | + Slow Motion button                        |
 
 ---
 
@@ -129,17 +134,17 @@ balloon-privilege-game/
 ### Test Scenarios:
 
 1. **Basic Functionality:**
-   - Enter any email
+   - Enter any username
    - Verify balloons appear and rise
    - Click/tap to pop
    - Confirm scoring works
 
 2. **Privilege Testing:**
    ```
-   No privilege:      test@example.com
-   Network only:      mike@example.com
-   Opportunity only:  sarah@example.org (no M)
-   Both privileges:   michael@example.com
+   No privilege:      joe
+   Network only:      mark (has 'a')
+   Opportunity only:  joe1 (has number)
+   Both privileges:   sarah2 (has 'a' and number)
    ```
 
 3. **Progressive Features:**
@@ -179,11 +184,21 @@ npm run dev
 ## 📊 Educational Value
 
 This game demonstrates:
-1. **Initial Advantages** → Small privileges (knowing purple = 100pts, practice) give immediate edge
+1. **Initial Advantages** → Small privileges (knowing yellow = 100pts, practice) give immediate edge
 2. **Compound Effect** → Early leads make it easier to unlock Super Skills/Slow-Mo
 3. **Exponential Gap** → Players with both privileges can score 5-10x more
-4. **Hidden Rules** → Those without network privilege never learn about purple balloons
+4. **Hidden Rules** → Those without network privilege never learn about yellow balloons
 5. **"Merit" Illusion** → Final scores appear to reflect "skill" but privileges were determinant
+
+## 🔐 Admin Dashboard
+
+Access the admin dashboard at `/admin` with password `Eniola` to:
+- View all player results in a sortable table
+- See statistics broken down by privilege groups
+- Compare average scores across privilege levels
+- Download results as CSV for analysis
+- Delete individual test entries or clear all data
+- Visualize privilege impact with interactive charts
 
 ### Suggested Debrief Questions:
 - How did your score compare to others?
@@ -213,22 +228,24 @@ export function shouldUnlockSlowButton(totalScore: number): boolean {
 ```typescript
 export function getBalloonPoints(type: BalloonType): number {
   return {
-    red: 10,    // Modify values
-    blue: 10,
+    white: 0,      // Killer balloon
+    yellow: 100,   // High value - modify this
+    blue: -50,     // Penalty balloon
+    pink: 10,      // Regular balloons
     green: 10,
-    purple: 100,  // Make purple worth more/less
-    black: 0,
+    purple: 10,
+    orange: 10,
+    teal: 10,
   }[type];
 }
 ```
 
 **Detect Privileges Differently:**
 ```typescript
-export function detectPrivileges(email: string): ... {
-  const emailLower = email.toLowerCase();
+export function detectPrivileges(username: string): ... {
   return {
-    networkPrivilege: emailLower.includes('m'),     // Change letter
-    opportunityPrivilege: emailLower.includes('h'), // Change letter
+    networkPrivilege: username.toLowerCase().includes('a'),  // Change letter
+    opportunityPrivilege: /\d/.test(username),               // Change to detect numbers
   };
 }
 ```
@@ -320,11 +337,11 @@ git add .
 git commit -m "Balloon Privilege Game"
 # Push to GitHub, then deploy via vercel.com
 
-# Test emails to try:
-# No privilege: test@example.com
-# Network: mike@example.com  
-# Opportunity: hannah@example.org
-# Both: michael@example.com
+# Test usernames to try:
+# No privilege: joe
+# Network: mark (has 'a')
+# Opportunity: joe1 (has number)
+# Both: sarah2 (has 'a' and number)
 ```
 
 ---
