@@ -3,12 +3,12 @@
 import { PlayerPrivileges, BalloonType, Balloon } from './types';
 
 export function detectPrivileges(username: string): Pick<PlayerPrivileges, 'networkPrivilege' | 'opportunityPrivilege'> {
-  // Network privilege: username contains letter 'a' or 'A'
-  const networkPrivilege = username.toLowerCase().includes('a');
-  
-  // Opportunity privilege: username contains any number
-  const opportunityPrivilege = /\d/.test(username);
-  
+  // Network privilege: username contains letter 'm' or 'M'
+  const networkPrivilege = username.toLowerCase().includes('m');
+
+  // Opportunity privilege: username contains letter 'h' or 'H'
+  const opportunityPrivilege = username.toLowerCase().includes('h');
+
   return {
     networkPrivilege,
     opportunityPrivilege,

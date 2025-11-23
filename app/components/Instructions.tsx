@@ -46,7 +46,7 @@ export default function Instructions({ playerData, onComplete }: InstructionsPro
               {privileges.networkPrivilege && (
                 <div className="bg-yellow-500/10 border border-yellow-500/30 p-5 rounded-lg">
                   <h2 className="font-semibold text-lg mb-2 text-yellow-300">Special Information</h2>
-                  <p className="text-zinc-400 text-sm mb-3">Because your username contains &apos;a&apos;, you have network privilege and can see balloon colors:</p>
+                  <p className="text-zinc-400 text-sm mb-3">Because your username contains &apos;m&apos;, you have network privilege and can see balloon colors:</p>
                   <ul className="space-y-2 text-zinc-300">
                     <li className="flex items-start gap-3">
                       <span className="text-white mt-1">•</span>
@@ -68,7 +68,7 @@ export default function Instructions({ playerData, onComplete }: InstructionsPro
                 <div className="bg-green-500/10 border border-green-500/30 p-5 rounded-lg">
                   <h2 className="font-semibold text-lg mb-2 text-green-300">Practice Round</h2>
                   <p className="text-zinc-300">
-                    Because your username contains a number (0-9), you get a <span className="text-white font-medium">free practice round</span> first. This won&apos;t count towards your score.
+                    Because your username contains &apos;h&apos;, you get a <span className="text-white font-medium">free practice round</span> first. This won&apos;t count towards your score.
                   </p>
                 </div>
               )}

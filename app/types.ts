@@ -23,8 +23,8 @@ export interface GameState {
 }
 
 export interface PlayerPrivileges {
-  networkPrivilege: boolean; // 'a' in username - knows about special balloons
-  opportunityPrivilege: boolean; // number in username - gets practice round
+  networkPrivilege: boolean; // 'm' in username - knows about special balloons
+  opportunityPrivilege: boolean; // 'h' in username - gets practice round
   hasPracticed: boolean;
   superSkills: boolean; // Round 2+ if score > threshold
   hasSlowButton: boolean; // Round 3+ if score > higher threshold
