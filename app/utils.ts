@@ -53,7 +53,7 @@ function getRandomBalloonType(difficulty: number, round: number = 1): BalloonTyp
   // 15% chance for yellow (100 points)
   if (rand < whiteChance + 0.15) return 'yellow';
   
-  // 15% chance for blue (lose 50 points)
+  // 15% chance for blue (lose 100 points)
   if (rand < whiteChance + 0.30) return 'blue';
   
   // Remaining chance for regular 10-point balloons
@@ -63,8 +63,8 @@ function getRandomBalloonType(difficulty: number, round: number = 1): BalloonTyp
 
 export function createBalloon(canvasWidth: number, difficulty: number, round: number = 1): Balloon {
   const type = getRandomBalloonType(difficulty, round);
-  // Speed increases by 20% each round (round 1 = 1x, round 2 = 1.2x, round 3 = 1.4x, etc.)
-  const roundSpeedMultiplier = 1 + ((round - 1) * 0.2);
+  // Speed increases by 35% each round (round 1 = 1x, round 2 = 1.35x, round 3 = 1.7x, etc.)
+  const roundSpeedMultiplier = 1 + ((round - 1) * 0.35);
   return {
     id: Math.random().toString(36).substr(2, 9),
     x: Math.random() * (canvasWidth - 100) + 50,
@@ -77,12 +77,12 @@ export function createBalloon(canvasWidth: number, difficulty: number, round: nu
 
 // Create a white balloon near a high-value balloon to catch people out
 export function createTrapBalloon(targetBalloon: Balloon, canvasWidth: number, round: number = 1): Balloon {
-  const roundSpeedMultiplier = 1 + ((round - 1) * 0.2);
+  const roundSpeedMultiplier = 1 + ((round - 1) * 0.35);
   // Spawn near the target balloon (within 80-150 pixels)
   const distance = 80 + Math.random() * 70;
   const angle = Math.random() * Math.PI * 2;
   const x = Math.max(50, Math.min(canvasWidth - 50, targetBalloon.x + Math.cos(angle) * distance));
-  
+
   return {
     id: Math.random().toString(36).substr(2, 9),
     x,
